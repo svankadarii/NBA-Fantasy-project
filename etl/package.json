@@ -1,0 +1,17 @@
+{
+  "name": "nba-fantasy-etl",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js ETL: pulls teams/players/games from balldontlie.io into Postgres",
+  "scripts": {
+    "initial-load": "node src/initialLoad.js",
+    "daily-etl": "node src/dailyEtl.js",
+    "cron": "node src/cronScheduler.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "node-cron": "^3.0.3",
+    "pg": "^8.11.5"
+  }
+}

@@ -1,0 +1,8 @@
+xgboost>=2.0.3
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.1
+joblib>=1.4.0
+SQLAlchemy>=2.0.29
