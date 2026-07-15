@@ -35,7 +35,7 @@ def clean(v):
     return v
 
 
-def call_with_retries(fn, retries=3, backoff=2):
+def call_with_retries(fn, retries=6, backoff=5):
     last_err = None
     for attempt in range(1, retries + 1):
         try:
@@ -94,7 +94,7 @@ def fetch_nba_games_for_date(game_date_str):
             date_from_nullable=game_date_str,
             date_to_nullable=game_date_str,
             league_id_nullable="00",
-            timeout=30,
+            timeout=60,
         )
         return result.get_data_frames()[0]
 
@@ -129,7 +129,7 @@ def _parse_minutes(val):
 
 def fetch_box_score(nba_game_id):
     def _fetch():
-        bs = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=nba_game_id, timeout=30)
+        bs = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=nba_game_id, timeout=60)
         return bs.get_data_frames()[0]  # PlayerStats
 
     return call_with_retries(_fetch)
@@ -186,7 +186,11 @@ def main():
         player_lookup = build_player_lookup(conn)
 
         print(f"Looking up nba_api games for {game_date}...")
-        nba_game_map = fetch_nba_games_for_date(game_date)
+        try:
+            nba_game_map = fetch_nba_games_for_date(game_date)
+        except Exception as e:
+            print(f"SKIPPED_DATE {game_date}: could not reach nba_api after retries ({e})")
+            return
 
         cur = conn.cursor()
         for g in games:
@@ -197,7 +201,11 @@ def main():
                 continue
 
             print(f"Fetching box score for our game {g['id']} (nba_api game {nba_game_id})...")
-            box = fetch_box_score(nba_game_id)
+            try:
+                box = fetch_box_score(nba_game_id)
+            except Exception as e:
+                print(f"SKIPPED_GAME {g['id']} (nba_api game {nba_game_id}): {e}")
+                continue
             time.sleep(0.6)  # be polite to stats.nba.com
 
             for _, row in box.iterrows():
